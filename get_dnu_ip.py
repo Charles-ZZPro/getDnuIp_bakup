@@ -1,12 +1,11 @@
 #-*-coding:utf-8-*-
 
 ###
-# ver:     0.05
-# date:    2017-08-18
+# ver:     1.0
+# date:    2017-09-13
 # author:  Charles.Z
 # change log:
-#     database stucture changed influence;
-#     bug fixed;
+#     fix bugs;
 ###
 
 from __future__ import print_function
@@ -21,11 +20,45 @@ import hashlib
 from random import Random
 import sys
 
+printhelp = ""
+printhelp = "========= 欢迎您使用user ip查询命令 =========\r\n"
+printhelp = printhelp + "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n"
+printhelp = printhelp + "                   _ooOoo_\r\n"
+printhelp = printhelp + "                  o8888888o\r\n"
+printhelp = printhelp + '                  88" . "88\r\n'
+printhelp = printhelp + "                  (| -_- |)\r\n"
+printhelp = printhelp + "                  O\  =  /O\r\n"
+printhelp = printhelp + "               ____/`---'\____\r\n"
+printhelp = printhelp + "              '  \\\|     |//  `.\r\n"
+printhelp = printhelp + "            /  \\\|||  :  |||//  \\\n"
+printhelp = printhelp + "           /  _||||| -:- |||||-  \\\n"
+printhelp = printhelp + "           |   | \\\\  -  /// |   |\r\n"
+printhelp = printhelp + "           | \_|  ''\---/''  |   |\r\n"
+printhelp = printhelp + "           \  .-\__  `-`  ___/-. /\r\n"
+printhelp = printhelp + "         ___`. .'  /--.--\  `. . __\r\n"
+printhelp = printhelp + "      .'' '<  `.___\_<|>_/___.'  >'''.\r\n"
+printhelp = printhelp + "     | | :  `- \`.;`\ _ /`;.`/ - ` : | |\r\n"
+printhelp = printhelp + "     \  \ `-.   \_ __\ /__ _/   .-` /  /\r\n"
+printhelp = printhelp + "======`-.____`-.___\_____/___.-`____.-'======\r\n"
+printhelp = printhelp + "                   `=---='\r\n"
+printhelp = printhelp + "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n"
+printhelp = printhelp + "====== 介首锅作为约定,今后路我们一起走 ======\r\n"
+
+if sys.argv[1] == 'help':
+    printhelp = printhelp + "\r\n"
+    printhelp = printhelp + "Arguments Instruction :::\r\n"
+    printhelp = printhelp + "argument 1 : project ID\r\n"
+    printhelp = printhelp + "argument 2 : user type (DAU/DNU)\r\n"
+    printhelp = printhelp + "argument 3 : start date\r\n"
+    printhelp = printhelp + "argument 4 : end date\r\n"
+    printhelp = printhelp + "argument 5 : DAU type (true/false/total. Needed when arg2 is DAU, true for default)"
+    print(printhelp)
+    sys.exit(0)
+
+print(printhelp)
 # leancloud.init("Fhdcn0x7iznoVTkg6kzthl6w-gzGzoHsz", "cTNJGjdsCK6snzqmNhTsumjp")
 
 leancloud.init("Fhdcn0x7iznoVTkg6kzthl6w-gzGzoHsz", master_key="usMoq9bILw9Yp39lL2K89sjq")
-
-
 
 class _File(Object):
     pass
@@ -82,9 +115,11 @@ if todo_list_exp_ip != []:
     for each_exp_ip in todo_list_exp_ip:
         exp_ip_col.append(each_exp_ip.get('androidId'))
 
-if "DAU" == "DAU":
+if du_w == "DAU":
     if len(sys.argv) == 6 and sys.argv[5] == "total":
         cql_get_updateAt = "select objectId, updatedAt, userId from StatDAU where updatedAt >= date('"+date_from+"') and updatedAt <= date('"+date_to+"') and projectId = '"+proj_id+"' limit 99999999"
+    elif len(sys.argv) == 6 and sys.argv[5] == "false":
+        cql_get_updateAt = "select objectId, updatedAt, userId from StatDAU where updatedAt >= date('"+date_from+"') and updatedAt <= date('"+date_to+"') and projectId = '"+proj_id+"'  and verified = false limit 99999999"
     else:
         cql_get_updateAt = "select objectId, updatedAt, userId from StatDAU where updatedAt >= date('"+date_from+"') and updatedAt <= date('"+date_to+"') and projectId = '"+proj_id+"'  and verified = true limit 99999999"
     # print(cql_get_updateAt)    
@@ -134,8 +169,14 @@ if "DAU" == "DAU":
             cql_get_ip = cql_get_ip + "updatedAt = date('2087-08-01T00:00:00.000Z') limit 99999999"            
             # cql_get_ip = cql_get_ip[:-1] + ") limit 99999999"
         # print(cql_get_ip)
-        todo_query_get_ip = leancloud.Query.do_cloud_query(cql_get_ip)
-        todo_list_get_ip = todo_query_get_ip.results # 返回符合条件的 todo list 
+        
+        try:
+            todo_query_get_ip = leancloud.Query.do_cloud_query(cql_get_ip)
+            todo_list_get_ip = todo_query_get_ip.results # 返回符合条件的 todo list 
+        except Exception, e:  
+            print('Sql too long !!! :::')
+            print(cql_get_ip)
+            sys.exit(1)
         # print(todo_list_get_ip)
         i = 0
         for each in todo_list_get_ip:
@@ -169,7 +210,7 @@ if "DAU" == "DAU":
 
     # ip_col_final = ip_all_col
 
-if "DNU" == "DNU":
+if du_w == "DNU":
     # for each_ip in ip_col:
     #     cql_get_ip_dnu = "select objectId from StatLog where requestIP = ? and updateAt < ?"
     #     todo_query_get_ip_dnu = leancloud.Query.do_cloud_query(cql_get_ip_dnu, each_ip, date_from)
@@ -195,9 +236,9 @@ if "DNU" == "DNU":
         aHour = datetime.timedelta(hours=8)
         dic_c['time'] = (each_dnu.get('createdAt')+aHour).strftime('%Y-%m-%d %H:%M:%S')
 
-        for each_all_ip in ip_all_col:
-            if aid_dnu == each_all_ip['aid']:
-                    dic_c['ip'] = each_all_ip['ip']
+        # for each_all_ip in ip_all_col:
+        #     if aid_dnu == each_all_ip['aid']:
+        #             dic_c['ip'] = each_all_ip['ip']
 
         if dic_c['ip'] == "::ffff:888.88.88.888":
             cql_get_ip_dnu_888 = "select objectId, requestIP  ,requestObj from StatLog where  "
@@ -209,12 +250,16 @@ if "DNU" == "DNU":
             # print(cql_get_ip_dnu_888)
             todo_query_get_ip_dnu_888 = leancloud.Query.do_cloud_query(cql_get_ip_dnu_888)
             todo_list_get_ip_dnu_888 = todo_query_get_ip_dnu_888.results # 返回符合条件的 todo list         
-            if todo_list_get_ip_dnu_888 != [] and todo_list_get_ip_dnu_888[0].get('requestObj')['headerRequest']['projectId'] == proj_id:
-            # if todo_list_get_ip_dnu_888 != []:
-                if todo_list_get_ip_dnu_888[0].get('requestIP') != None:
-                    dic_c['ip'] = todo_list_get_ip_dnu_888[0].get('requestIP')
-                else:
-                    dic_c['ip'] = "None"
+            # if todo_list_get_ip_dnu_888 != [] and todo_list_get_ip_dnu_888[0].get('requestObj')['headerRequest']['projectId'] == proj_id:
+            if todo_list_get_ip_dnu_888 != []:
+                for each_getting_ip in todo_list_get_ip_dnu_888:
+                    if each_getting_ip.get('requestObj')['headerRequest']['projectId'] != proj_id:
+                        continue
+                    else:                       
+                        if todo_list_get_ip_dnu_888[0].get('requestIP') != None:
+                            dic_c['ip'] = each_getting_ip.get('requestIP')
+                        else:
+                            dic_c['ip'] = "None"
 
         ### Duplicate removal
         cql_get_ip_dnu_checkaid = "select objectId from StatUser where createdAt < date('"+date_from+"') and androidId = '" + dic_c['aid'] +"'"
@@ -243,7 +288,8 @@ elif du_w == "DNU":
 if ip_col_final == []:
     print("No records for selected date range !!!")
 else:
-    print("Request ip adresses : ")
+    # print("Request ip adresses : ")
+    print("===========IP===========================AID===========================TIME===========")
     for each_ip_final in ip_col_final:
         ip_now = each_ip_final['ip'][7:]
         if each_ip_final['ip'][7:].count("|") != 0 :
@@ -252,5 +298,5 @@ else:
         # print(each_ip_final['ip'][7:].ljust(30))
         # print(each_ip_final['aid'].ljust(16))
         # print(each_ip_final['time'])
-        printls = "ip : "+ip_now.ljust(16)+"     androidID : "+each_ip_final['aid'].ljust(16)+"     time : "+each_ip_final['time']
+        printls = "ip : "+ip_now.ljust(16)+"     androidID : "+each_ip_final['aid'].ljust(16)+"     time : "+each_ip_final['time'] + "\r\n-------------------------------------------------------------------------------------"
         print(printls)
